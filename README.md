@@ -3,7 +3,8 @@ Ecology indexes in nutshell (trial)
 
 ## Streamlit Deployment
 
-Aplikasi ini menghitung indeks keanekaragaman hayati dari data species dan jumlah individu.
+Aplikasi ini menghitung indeks keanekaragaman hayati dari data species dan jumlah individu di setiap habitat pengamatan.
+Hasil dari aplikasi ini adalah perbandingan nilai indeks-indeks keanekaragaman hayati pada setiap habitat pengamatan.
 
 ### Jalankan lokal
 
@@ -21,7 +22,7 @@ streamlit run streamlit_app.py
 
 ### Input Data
 
-- Unggah file CSV dengan kolom `species` dan `count`
+- Unggah file CSV dengan kolom `species` dan `habitat`
 - Atau masukkan data langsung dalam format CSV tanpa header di area teks
 
 ### Indeks yang dihitung
@@ -29,3 +30,4 @@ streamlit run streamlit_app.py
 - Shannon-Wiener
 - Simpson
 - Evenness
+- Pielou
