@@ -1,33 +1,69 @@
 # Project-ecology
-Ecology indexes in nutshell (trial)
+Aplikasi Streamlit untuk menghitung indeks keanekaragaman hayati dari data species di beberapa habitat.
 
-## Streamlit Deployment
+## Struktur Proyek
 
-Aplikasi ini menghitung indeks keanekaragaman hayati dari data species dan jumlah individu di setiap habitat pengamatan.
-Hasil dari aplikasi ini adalah perbandingan nilai indeks-indeks keanekaragaman hayati pada setiap habitat pengamatan.
-
-### Jalankan lokal
-
-1. Instal dependensi:
-
-```bash
-pip install -r requirements.txt
+```
+project-ekologi/
+├── streamlit_app.py
+├── requirements.txt
+├── README.md
+├── pages/
+│   ├── 1_Input_Data.py
+│   ├── 2_Indeks_Ekologi.py
+│   ├── 3_Rank_Abundance.py
+│   └── 4_Export_Hasil.py
+└── utils/
+    ├── diversity.py
+    ├── io.py
+    └── plotting.py
 ```
 
-2. Jalankan Streamlit:
+## Fitur Utama
+
+- Unggah data CSV atau gunakan Google Spreadsheet publik
+- Masukkan data secara manual jika tidak ingin mengunggah file
+- Deteksi dan tangani duplikat species
+- Hitung indeks keanekaragaman:
+  - Shannon-Wiener
+  - Simpson
+  - Pielou
+  - Margalef
+- Tampilkan analisis dan grafik per habitat
+- Tampilkan ranking abundance dan ekspor hasil input
+
+## Persiapan
+
+1. Pastikan Python 3.12 atau lebih baru terpasang.
+2. Instal dependensi:
 
 ```bash
-streamlit run streamlit_app.py
+python3 -m pip install -r requirements.txt
 ```
 
-### Input Data
+## Menjalankan Aplikasi
 
-- Unggah file CSV dengan kolom `species` dan `habitat`
-- Atau masukkan data langsung dalam format CSV tanpa header di area teks
+```bash
+cd /workspaces/Project-ecology
+python3 -m streamlit run streamlit_app.py
+```
 
-### Indeks yang dihitung
+Buka browser pada alamat `http://localhost:8501`.
 
-- Shannon-Wiener
-- Simpson
-- Evenness
-- Pielou
+## Halaman Aplikasi
+
+- `1_Input_Data`: Unggah CSV, gunakan Google Spreadsheet, atau masukkan data manual.
+- `2_Indeks_Ekologi`: Hitung dan tampilkan indeks keanekaragaman per habitat.
+- `3_Rank_Abundance`: Tampilkan rank abundance setiap habitat.
+- `4_Export_Hasil`: Ekspor data input dalam format CSV.
+
+## Dependensi Utama
+
+- `streamlit`
+- `pandas`
+- `numpy`
+- `altair`
+
+## Catatan
+
+Pastikan file CSV memiliki kolom pertama untuk nama species dan setidaknya satu kolom habitat berisi angka.
