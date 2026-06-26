@@ -21,6 +21,11 @@ def render_indeks_ekologi_page():
         st.error("Format data tidak valid. Pastikan kolom 'species' ada.")
         return
 
+    # Check if famili column exists, warn if not but continue
+    has_famili = "famili" in df.columns
+    if not has_famili:
+        st.warning("⚠️ Kolom 'famili' tidak ditemukan. Perhitungan indeks ekologi akan dilanjutkan, namun tanpa kategori famili.")
+
     if not habitat_columns:
         st.error("Format data tidak valid. Tambahkan setidaknya satu kolom habitat.")
         return
@@ -30,7 +35,10 @@ def render_indeks_ekologi_page():
         st.error("Semua kolom habitat harus berisi angka. Periksa data Anda.")
         return
 
-    df = df.groupby("species", as_index=False)[habitat_columns].sum()
+    df = df.groupby("species", as_index=False).agg(
+        {**{col: "sum" for col in habitat_columns}, 
+         **({"famili": "first"} if has_famili else {})}
+    )
 
     st.write("### Ringkasan data species")
     st.write(f"Jumlah jenis species: {len(df)}")
@@ -45,9 +53,31 @@ def render_indeks_ekologi_page():
     analysis_text = get_analysis_text(hasil_summary.set_index('habitat').T)
     st.markdown("\n".join(analysis_text))
 
-    from utils.plotting import build_diversity_chart
-    chart = build_diversity_chart(hasil_summary.set_index('habitat').T)
-    st.altair_chart(chart, use_container_width=True)
+    from utils.plotting import build_index_chart, build_index_chart_by_index
+
+    st.write("### Visualisasi indeks per habitat")
+    st.write("Grafik di bawah ini mengelompokkan setiap indeks berdasarkan habitat, sehingga Anda dapat membandingkan nilai H_Shannon, J_Pielou, Dmg_Margalef, dan D_Simpson untuk setiap habitat.")
+    index_df = hasil_summary.melt(
+        id_vars=["habitat"],
+        value_vars=["H_Shannon", "J_Pielou", "Dmg_Margalef", "D_Simpson"],
+        var_name="index",
+        value_name="value",
+    )
+    habitat_order = hasil_summary.sort_values(by="H_Shannon", ascending=False)["habitat"].tolist()
+    st.altair_chart(build_index_chart(index_df, habitat_order=habitat_order), width='stretch')
+
+    st.write("### Visualisasi per indeks habitat")
+    for index_name in ["H_Shannon", "J_Pielou", "Dmg_Margalef", "D_Simpson"]:
+        st.write(f"#### {index_name}")
+        index_table = hasil_summary[["habitat", index_name]].sort_values(by=index_name, ascending=False).reset_index(drop=True)
+        st.dataframe(index_table)
+
+        habitat_order_for_index = index_table["habitat"].tolist()
+        index_chart_df = index_table.rename(columns={index_name: "value"})
+        st.altair_chart(
+            build_index_chart_by_index(index_chart_df, habitat_order=habitat_order_for_index),
+            width='stretch',
+        )
 
     pi_df = melt_species_habitat(df, habitat_columns)
     st.write("### Tabel nilai p_i ln(p_i) per species dan habitat")

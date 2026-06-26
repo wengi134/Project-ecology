@@ -38,29 +38,42 @@ def build_rank_abundance_chart(rank_df: pd.DataFrame, habitat: str) -> alt.Chart
     )
 
 
-def build_index_chart(index_df: pd.DataFrame) -> alt.Chart:
+def build_index_chart(index_df: pd.DataFrame, habitat_order: list[str] | None = None) -> alt.Chart:
+    x_encoding = alt.X(
+        "habitat:N",
+        title="Habitat",
+        axis=alt.Axis(labelAngle=90),
+        sort=alt.SortArray(habitat_order) if habitat_order else None,
+    )
+
     return (
         alt.Chart(index_df)
         .mark_bar()
         .encode(
-            x=alt.X("habitat:N", title="Habitat"),
-            y=alt.Y("value:Q", title="Nilai"),
+            x=x_encoding,
+            y=alt.Y("value:Q", title="Index value", stack=None),
             color=alt.Color("index:N", title="Indeks"),
-            column=alt.Column("index:N", title="Indeks", header=alt.Header(labelAngle=0, labelOrient="bottom")),
+            xOffset=alt.XOffset("index:N"),
             tooltip=["habitat", "index", "value"],
         )
-        .properties(width=200, height=350)
+        .properties(width=700, height=400)
     )
 
 
-def build_index_chart_by_index(index_df: pd.DataFrame) -> alt.Chart:
+def build_index_chart_by_index(index_df: pd.DataFrame, habitat_order: list[str] | None = None) -> alt.Chart:
+    x_encoding = alt.X(
+        "habitat:N",
+        title="Habitat",
+        axis=alt.Axis(labelAngle=90),
+        sort=alt.SortArray(habitat_order) if habitat_order else None,
+    )
+
     return (
         alt.Chart(index_df)
-        .mark_bar()
+        .mark_bar(fill="#A8D5BA", stroke="#2F8F4B", strokeWidth=1)
         .encode(
-            x=alt.X("habitat:N", title="Habitat"),
-            y=alt.Y("value:Q", title="Nilai"),
-            color=alt.Color("habitat:N", title="Habitat"),
+            x=x_encoding,
+            y=alt.Y("value:Q", title="Index value"),
             tooltip=["habitat", "value"],
         )
         .properties(width=700, height=400)

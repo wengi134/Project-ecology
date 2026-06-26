@@ -23,12 +23,20 @@ def render_rank_abundance_page():
         st.error("Format data tidak valid. Pastikan kolom 'species' ada.")
         return
 
+    # Check if famili column exists, warn if not but continue
+    has_famili = "famili" in df.columns
+    if not has_famili:
+        st.warning("⚠️ Kolom 'famili' tidak ditemukan. Perhitungan rank abundance akan dilanjutkan tanpa kategori famili.")
+
     df[habitat_columns] = df[habitat_columns].apply(pd.to_numeric, errors="coerce")
     if df[habitat_columns].isna().any().any():
         st.error("Semua kolom habitat harus berisi angka. Periksa data Anda.")
         return
 
-    df = df.groupby("species", as_index=False)[habitat_columns].sum()
+    df = df.groupby("species", as_index=False).agg(
+        {**{col: "sum" for col in habitat_columns}, 
+         **({"famili": "first"} if has_famili else {})}
+    )
 
     # membuat chart untuk setiap habitat berdasarkan rank abundance
     st.write("### Habitat berdasarkan kekayaan species dan total populasi")
@@ -76,20 +84,29 @@ def render_rank_abundance_page():
         )
         .properties(width=900, height=420)
     )
-    st.altair_chart(chart, use_container_width=True)
+    st.altair_chart(chart, width='stretch')
 
     st.write("### Rank Abundance per habitat")
     for habitat in habitat_columns:
         st.write(f"#### {habitat}")
-        rank_df = (
-            df[["species", habitat]]
-            .sort_values(by=habitat, ascending=False)
-            .reset_index(drop=True)
-        )
-        rank_df.index += 1
-        rank_df.insert(0, "Rank", rank_df.index)
+        if has_famili:
+            rank_df = (
+                df[["species", "famili", habitat]]
+                .sort_values(by=habitat, ascending=False)
+                .reset_index(drop=True)
+            )
+            rank_df.index += 1
+            rank_df.insert(0, "Rank", rank_df.index)
+        else:
+            rank_df = (
+                df[["species", habitat]]
+                .sort_values(by=habitat, ascending=False)
+                .reset_index(drop=True)
+            )
+            rank_df.index += 1
+            rank_df.insert(0, "Rank", rank_df.index)
         st.dataframe(rank_df)
-        st.altair_chart(build_rank_abundance_chart(rank_df, habitat), use_container_width=True)
+        st.altair_chart(build_rank_abundance_chart(rank_df, habitat), width='stretch')
 
     st.write("### Nilai indeks per habitat")
     hasil_summary = calculate_diversity_metrics(df, habitat_columns)
@@ -106,7 +123,7 @@ def render_rank_abundance_page():
     for index_name in ["H_Shannon", "J_Pielou", "Dmg_Margalef", "D_Simpson"]:
         st.write(f"#### {index_name}")
         subset = index_long[index_long["index"] == index_name]
-        st.altair_chart(build_index_chart_by_index(subset), use_container_width=True)
+        st.altair_chart(build_index_chart_by_index(subset), width='stretch')
 
 
 def render():
